@@ -365,6 +365,28 @@ theorem eq_hh2 : (1 / 2:α) / ((1 / 2) ^ 2 + 1) + (1 / 2) / ((1 / 2) ^ 2 + 1) + 
 theorem eq_h2h : (1 / 2:α) / ((1 / 2) ^ 2 + 1) + 2 / (2 ^ 2 + 1) + (1 / 2) / ((1 / 2) ^ 2 + 1) = 2 / 5 * ((1 / 2) * 2 + 2 * (1 / 2) + (1 / 2) * (1 / 2) + 3 / 4) := by grind
 theorem eq_2hh : (2:α) / (2 ^ 2 + 1) + (1 / 2) / ((1 / 2) ^ 2 + 1) + (1 / 2) / ((1 / 2) ^ 2 + 1) = 2 / 5 * (2 * (1 / 2) + (1 / 2) * (1 / 2) + (1 / 2) * 2 + 3 / 4) := by grind
 
+/-! ### Bridges cho https://comparator.live.lean-lang.org
+
+Tên + signature phải khớp **chính xác** với các theorem trong `Challenge.lean`
+(xem `problem.md`, mục "Challenge"). Comparator đối chiếu statement đã chứng minh
+với statement tin cậy trong challenge. -/
+
+/-- Bất đẳng thức chính — khớp `ineq_challenge` trong challenge. -/
+theorem ineq_challenge (a b c : α) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (habc : a + b + c = 3) :
+    a / (a ^ 2 + 1) + b / (b ^ 2 + 1) + c / (c ^ 2 + 1)
+      ≤ 2 / 5 * (a * b + b * c + c * a + 3 / 4) :=
+  main_ineq a b c ha hb hc habc
+
+/-- (Tuỳ chọn) Phân loại đẳng thức — khớp `ineq_challenge_eq` trong challenge. -/
+theorem ineq_challenge_eq (a b c : α) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) (h : a + b + c = 3)
+    (heq : a / (a ^ 2 + 1) + b / (b ^ 2 + 1) + c / (c ^ 2 + 1)
+      = 2 / 5 * (a * b + b * c + c * a + 3 / 4)) :
+    (a = 1 ∧ b = 1 ∧ c = 1) ∨
+    (a = 3 ∧ b = 0 ∧ c = 0) ∨ (a = 0 ∧ b = 3 ∧ c = 0) ∨ (a = 0 ∧ b = 0 ∧ c = 3) ∨
+    (a = 1 / 2 ∧ b = 1 / 2 ∧ c = 2) ∨ (a = 1 / 2 ∧ b = 2 ∧ c = 1 / 2) ∨ (a = 2 ∧ b = 1 / 2 ∧ c = 1 / 2) :=
+  equality_cases a b c ha hb hc h heq
+
 end Ineq
 
 /-- Instantiation over ℚ (core `Rat`). -/
