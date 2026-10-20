@@ -11,7 +11,7 @@
          2c₂·s·F = 2c₂·μ·Δ + (q((87−4q)r − (4q²+27q−42)))² + (4/27)·s³·q²·(4q−9)²  ≥ 0.
     Dấu bằng ⟺ (a,b,c) = (1,1,1), hoán vị của (3,0,0), hoán vị của (1/2,1/2,2).
 
-  Kiểm chứng: Lean 4.28.0-pre (chỉ core, không Mathlib; dùng `grind`).
+  Kiểm chứng: Lean v4.35.0 stable (chỉ core, không Mathlib; dùng `grind`).
   Định lý được chứng minh cho MỌI trường có thứ tự `α` (tổng quát hoá ℚ, ℝ).
 -/
 set_option linter.unusedSectionVars false
@@ -40,6 +40,23 @@ theorem sq_eq_zero' (x : α) (h : x ^ 2 = 0) : x = 0 := by
     · have hn : 0 < -x := by grind
       have := mpos hn hn
       grind
+
+/-- Assoc-shift helper: from `x * d = a` deduce `x * (d * P) = a * P`. -/
+theorem div_mul_assoc {x a b c : α} (h : x * (a ^ 2 + 1) = a) :
+    x * ((a ^ 2 + 1) * ((b ^ 2 + 1) * (c ^ 2 + 1))) = a * ((b ^ 2 + 1) * (c ^ 2 + 1)) := by
+  grind
+
+/-- If `a+b+c = 3`, `ab+bc+ca = 9/4`, `abc = 1/2`, then each of `a, b, c`
+is a root of `(t - 2) * (t - 1/2) ^ 2`. -/
+theorem cubic_roots (a b c q r : α) (habc : a + b + c = 3) (hq : a * b + b * c + c * a = q)
+    (hr : a * b * c = r) (hqr : q = 9 / 4) (hrr : r = 1 / 2) :
+    (a - 2) * (a - 1 / 2) ^ 2 = 0 ∧ (b - 2) * (b - 1 / 2) ^ 2 = 0 ∧ (c - 2) * (c - 1 / 2) ^ 2 = 0 := by
+  subst hqr
+  subst hrr
+  have ha2 : a ^ 2 * (a + b + c - 3) = 0 := by rw [habc]; grind
+  have hb2 : b ^ 2 * (a + b + c - 3) = 0 := by rw [habc]; grind
+  have hc2 : c ^ 2 * (a + b + c - 3) = 0 := by rw [habc]; grind
+  grind
 
 /-- Core lemma in the (q,r) variables, q = ab+bc+ca, r = abc (with a+b+c = 3). -/
 theorem F_nonneg (q r : α) (hq0 : 0 ≤ q) (hq3 : q ≤ 3) (hr : 0 ≤ r)
@@ -153,18 +170,12 @@ theorem main_ineq (a b c : α) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) (h :
   generalize a / (a ^ 2 + 1) = x at hx ⊢
   generalize b / (b ^ 2 + 1) = y at hy ⊢
   generalize c / (c ^ 2 + 1) = z at hz ⊢
-  have e1 : x * ((a ^ 2 + 1) * ((b ^ 2 + 1) * (c ^ 2 + 1))) = a * ((b ^ 2 + 1) * (c ^ 2 + 1)) := by
-    have := congrArg (· * ((b ^ 2 + 1) * (c ^ 2 + 1))) hx
-    simp only at this
-    grind
-  have e2 : y * ((b ^ 2 + 1) * ((a ^ 2 + 1) * (c ^ 2 + 1))) = b * ((a ^ 2 + 1) * (c ^ 2 + 1)) := by
-    have := congrArg (· * ((a ^ 2 + 1) * (c ^ 2 + 1))) hy
-    simp only at this
-    grind
-  have e3 : z * ((c ^ 2 + 1) * ((a ^ 2 + 1) * (b ^ 2 + 1))) = c * ((a ^ 2 + 1) * (b ^ 2 + 1)) := by
-    have := congrArg (· * ((a ^ 2 + 1) * (b ^ 2 + 1))) hz
-    simp only at this
-    grind
+  have e1 : x * ((a ^ 2 + 1) * ((b ^ 2 + 1) * (c ^ 2 + 1))) = a * ((b ^ 2 + 1) * (c ^ 2 + 1)) :=
+    div_mul_assoc hx
+  have e2 : y * ((b ^ 2 + 1) * ((a ^ 2 + 1) * (c ^ 2 + 1))) = b * ((a ^ 2 + 1) * (c ^ 2 + 1)) :=
+    div_mul_assoc hy
+  have e3 : z * ((c ^ 2 + 1) * ((a ^ 2 + 1) * (b ^ 2 + 1))) = c * ((a ^ 2 + 1) * (b ^ 2 + 1)) :=
+    div_mul_assoc hz
   -- (x+y+z)·Π = N ≤ R·Π
   have hN : (x + y + z) * ((a ^ 2 + 1) * (b ^ 2 + 1) * (c ^ 2 + 1))
       ≤ 2 / 5 * (a * b + b * c + c * a + 3 / 4) * ((a ^ 2 + 1) * (b ^ 2 + 1) * (c ^ 2 + 1)) := by
@@ -278,18 +289,12 @@ theorem equality_cases (a b c : α) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
   generalize a / (a ^ 2 + 1) = x at hx heq
   generalize b / (b ^ 2 + 1) = y at hy heq
   generalize c / (c ^ 2 + 1) = z at hz heq
-  have e1 : x * ((a ^ 2 + 1) * ((b ^ 2 + 1) * (c ^ 2 + 1))) = a * ((b ^ 2 + 1) * (c ^ 2 + 1)) := by
-    have := congrArg (· * ((b ^ 2 + 1) * (c ^ 2 + 1))) hx
-    simp only at this
-    grind
-  have e2 : y * ((b ^ 2 + 1) * ((a ^ 2 + 1) * (c ^ 2 + 1))) = b * ((a ^ 2 + 1) * (c ^ 2 + 1)) := by
-    have := congrArg (· * ((a ^ 2 + 1) * (c ^ 2 + 1))) hy
-    simp only at this
-    grind
-  have e3 : z * ((c ^ 2 + 1) * ((a ^ 2 + 1) * (b ^ 2 + 1))) = c * ((a ^ 2 + 1) * (b ^ 2 + 1)) := by
-    have := congrArg (· * ((a ^ 2 + 1) * (b ^ 2 + 1))) hz
-    simp only at this
-    grind
+  have e1 : x * ((a ^ 2 + 1) * ((b ^ 2 + 1) * (c ^ 2 + 1))) = a * ((b ^ 2 + 1) * (c ^ 2 + 1)) :=
+    div_mul_assoc hx
+  have e2 : y * ((b ^ 2 + 1) * ((a ^ 2 + 1) * (c ^ 2 + 1))) = b * ((a ^ 2 + 1) * (c ^ 2 + 1)) :=
+    div_mul_assoc hy
+  have e3 : z * ((c ^ 2 + 1) * ((a ^ 2 + 1) * (b ^ 2 + 1))) = c * ((a ^ 2 + 1) * (b ^ 2 + 1)) :=
+    div_mul_assoc hz
   -- equality  ⇒  F(q,r) = 0
   have hF0 : (4 * (a * b + b * c + c * a) + 3) * (a * b * c) ^ 2 + (12 - 34 * (a * b + b * c + c * a)) * (a * b * c)
       + (a * b + b * c + c * a) * (4 * (a * b + b * c + c * a) ^ 2 - 5 * (a * b + b * c + c * a) + 4) = 0 := by
@@ -336,11 +341,7 @@ theorem equality_cases (a b c : α) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
     have u2 := sq_eq_zero' _ s2
     grind
   · -- q = 9/4, r = 1/2 : a,b,c are roots of (x-2)(x-1/2)^2
-    have ra : (a - 2) * (a - 1 / 2) ^ 2 = 0 := by subst hc'; grind
-    have rb : (b - 2) * (b - 1 / 2) ^ 2 = 0 := by subst hc'; grind
-    have rc : (c - 2) * (c - 1 / 2) ^ 2 = 0 := by
-      have rc' : (3 - a - b - 2) * (3 - a - b - 1 / 2) ^ 2 = 0 := by subst hc'; grind
-      subst hc'; exact rc'
+    obtain ⟨ra, rb, rc⟩ := cubic_roots a b c _ _ h hq hr rfl rfl
     have fa : a = 2 ∨ a = 1 / 2 := by
       rcases mul_eq_zero' ra with h | h
       · left; grind
