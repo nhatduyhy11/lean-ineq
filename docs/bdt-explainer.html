@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chứng minh bất đẳng thức a/(a²+1)+b/(b²+1)+c/(c²+1) ≤ (2/5)(ab+bc+ca+3/4)</title>
+<script>
+MathJax = {
+  tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+  svg: { fontCache: 'global' },
+  startup: {
+    pageReady: () => MathJax.startup.defaultPageReady().then(() => { window.mathDone = true; })
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 17mm 22mm 17mm;
+    @bottom-center { content: "Trang " counter(page) " / " counter(pages); font-size: 9pt; color: #888; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 11pt; line-height: 1.55; color: #1a2332;
+    max-width: 176mm; margin: 0 auto; padding: 0;
+  }
+  h1 { font-size: 17.5pt; text-align: center; margin: 0 0 2mm 0; color: #0f2a4a; line-height: 1.35; }
+  .subtitle { text-align: center; color: #5a6a7d; font-size: 10pt; margin-bottom: 6mm; }
+  h2 {
+    font-size: 13pt; color: #0f2a4a; margin: 8mm 0 2.5mm 0;
+    border-bottom: 1.6px solid #2a6f97; padding-bottom: 1.2mm;
+  }
+  h3 { font-size: 11.5pt; color: #16425b; margin: 5mm 0 1.5mm 0; }
+  p { margin: 1.6mm 0; text-align: justify; }
+  .box { border-radius: 2mm; padding: 3mm 4mm; margin: 3mm 0; break-inside: avoid; }
+  .problem { background: #eef4fb; border-left: 3.2px solid #2a6f97; }
+  .idea    { background: #fdf6e3; border-left: 3.2px solid #b58900; }
+  .fact    { background: #eef7f0; border-left: 3.2px solid #2d7a46; }
+  .case    { background: #f7f0fa; border-left: 3.2px solid #6b4fa0; }
+  .final   { background: #0f2a4a; color: #fff; text-align: center; padding: 4mm; }
+  .final .lbl { font-size: 10pt; letter-spacing: 2px; color: #9fc2e0; }
+  .idtab td { padding: 1.6mm 2.5mm; border-bottom: 0.7px solid #d7dee6; vertical-align: top; }
+  .idtab td:first-child { white-space: nowrap; font-weight: bold; color: #16425b; }
+  table { border-collapse: collapse; width: 100%; }
+  .center td { text-align: center; }
+  th { background: #0f2a4a; color: #fff; padding: 1.8mm; font-size: 10pt; }
+  td { padding: 1.6mm; border-bottom: 0.7px solid #d7dee6; font-size: 10.5pt; }
+  .small { font-size: 9.5pt; color: #5a6a7d; }
+  .qed { text-align: right; margin-top: 1mm; }
+  .figwrap { text-align: center; margin: 3mm 0; break-inside: avoid; }
+  .toc { background: #f5f7fa; border: 0.9px solid #cdd8e2; border-radius: 2mm; padding: 3mm 6mm; }
+  .toc li { margin: 0.8mm 0; }
+</style>
+</head>
+<body>
+
+<h1>Một chứng minh sáng rõ của bất đẳng thức</h1>
+<div class="subtitle">Tài liệu trình bày lại — bằng ký hiệu toán thông thường — lời giải đã được kiểm chứng bằng máy chứng minh định lý (Lean 4)</div>
+
+<div class="box problem">
+<b>Bài toán.</b> Cho $a, b, c$ là ba số không âm thỏa mãn $a+b+c = 3$. Chứng minh rằng
+$$\frac{a}{a^2+1}+\frac{b}{b^2+1}+\frac{c}{c^2+1}\;\le\;\frac{2}{5}\left(ab+bc+ca+\frac{3}{4}\right).$$
+<i>Dấu bằng xảy ra tại đúng bảy điểm:</i>
+$(1,1,1)$; các hoán vị của $(3,0,0)$; các hoán vị của $\left(\tfrac12,\tfrac12,2\right)$.
+</div>
+
+<div class="toc">
+<b>Nội dung.</b>
+<ol style="margin:1mm 0 0 5mm; padding:0">
+<li>Ý tưởng chính: gom mọi thứ về hai đại lượng $q$ và $r$</li>
+<li>Bước 1 — Khử mẫu số: quy về bất đẳng thức $F(q,r)\ge 0$</li>
+<li>Bước 2 — Sơ lược về miền giá trị của $(q,r)$</li>
+<li>Bước 3 — Chứng minh $F(q,r)\ge 0$ (ba trường hợp)</li>
+<li>Bước 4 — Phân loại dấu bằng</li>
+<li>Phụ lục: bảng các hằng đẳng thức được dùng đến</li>
+</ol>
+</div>
+
+<h2>1. Ý tưởng chính</h2>
+<p>
+Điều kiện $a+b+c=3$ khiến cho <b>tất cả</b> các đại lượng đối xứng của $a,b,c$
+(thành phần của vế phải, tích các mẫu số, v.v.) cuối cùng đều biểu diễn được
+qua chỉ <b>hai con số</b>:
+</p>
+$$q \;=\; ab+bc+ca \qquad\text{và}\qquad r \;=\; abc.$$
+<p>
+Trực giác: ba biến $a,b,c$ với tổng cố định chỉ còn "hai bậc tự do" — đủ để mô tả
+bởi $q$ và $r$. Vì vậy, thay vì chiến đấu với bất đẳng thức ba biến, ta đưa nó
+về một <b>bất đẳng thức hai biến</b> $F(q,r)\ge 0$ trên một miền giới hạn tốt,
+rồi xét ba vùng của miền đó riêng biệt.
+</p>
+
+<div class="box idea">
+<b>Chiến lược tổng quát.</b>
+<ol style="margin:1mm 0 0 5mm">
+<li>Khử mẫu số (nhân với tích $\prod(a^2+1) > 0$) → bất đẳng thức tương đương $F(q,r)\ge 0$.</li>
+<li>Chứng minh năm tính chất cơ bản của cặp $(q,r)$: $\;0\le q\le 3,\; 0\le r,\; 9r\le q^2,\; \Delta\ge0$.</li>
+<li>Chứng minh $F(q,r)\ge 0$ bằng ba trường hợp: $q\le\tfrac13$, $q=3$, và $\tfrac13\lt q\lt 3$.</li>
+<li>Suy ra phân loại đầy đủ các điểm dấu bằng.</li>
+</ol>
+</div>
+
+<h2>2. Bước 1 — Khử mẫu số, quy về $F(q,r)\ge 0$</h2>
+<p>
+Đặt $\Pi = (a^2+1)(b^2+1)(c^2+1)$. Vì $a^2+1\ge 1$ với mọi số thực, ta có
+$\Pi > 0$, nên nhân hai vế với $\Pi$ <b>không đổi chiều</b> bất đẳng thức.
+Nhân trái với $\Pi$ thì từng phân thức được rút gọn sạch:
+$$\frac{a}{a^2+1}\cdot\Pi = a(b^2+1)(c^2+1), \quad\text{v.v.}$$
+Đặt $N = a(b^2+1)(c^2+1)+b(a^2+1)(c^2+1)+c(a^2+1)(b^2+1)$ (vế trái sau khi nhân)
+và $R = \dfrac25\left(q+\dfrac34\right)\Pi$ (vế phải sau khi nhân).
+Khi đó bất đẳng thức cần chứng minh tương đương với $N \le R$.
+</p>
+<p>
+Khẳng định then chốt đầu tiên là một <b>hằng đẳng thức</b> (kiểm tra bằng cách
+khai triển hai vế — phép tính thuần túy, dùng $a+b+c=3$ để gom các số hạng):
+</p>
+<div class="box fact">
+<b>(Đ0)</b> $\;\displaystyle 10\,(R - N) \;=\; F(q,r),$
+$$\text{với}\quad F(q,r) \;=\; (4q+3)\,r^2 \;+\; (12-34q)\,r \;+\; q\,\bigl(4q^2-5q+4\bigr).$$
+</div>
+<p>
+Vậy <i>bài toán ban đầu tương đương với chứng minh $F(q,r)\ge 0$</i>. Toàn bộ
+nội dung của chứng minh bây giờ nằm ở việc hiểu cặp $(q,r)$ có thể nhận những
+giá trị nào, và tại sao $F$ không âm trên miền đó.
+</p>
+
+<h2>3. Bước 2 — Sơ lược về miền giá trị của $(q,r)$</h2>
+<p>
+Các bất đẳng thức dưới đây đều suy ra từ việc <b>bình phương thì không âm</b> —
+công cụ yếu nhất nhưng hiệu quả nhất của đại số. Cột phải nêu đẳng thức được dùng
+(tất cả liệt kê trong Phụ lục).
+</p>
+<div class="box fact">
+<table>
+<tr><td style="width:38mm"><b>(T1)</b>&nbsp; $q\ge 0$</td>
+<td>$q = ab+bc+ca$ là tổng các tích của số không âm.</td></tr>
+<tr><td><b>(T2)</b>&nbsp; $q\le 3$</td>
+<td>Theo (Đ1): $\;3-q=\dfrac{(a-b)^2+(b-c)^2+(c-a)^2}{6}\ \ge 0$.</td></tr>
+<tr><td><b>(T3)</b>&nbsp; $r\ge 0$</td>
+<td>$r=abc$ là tích các số không âm.</td></tr>
+<tr><td><b>(T4)</b>&nbsp; $9r\le q^2$</td>
+<td>Theo (Đ2): $\;q^2-9r=\dfrac{(ab-bc)^2+(bc-ca)^2+(ca-ab)^2}{2}\ \ge 0$.</td></tr>
+<tr><td><b>(T5)</b>&nbsp; $\Delta\ge 0$</td>
+<td>Theo (Đ3): $\;\Delta:=9q^2-4q^3+(54q-108)r-27r^2=\bigl((a-b)(b-c)(c-a)\bigr)^2\ \ge 0$.<br>
+<span class="small">Biết thêm: $\Delta=0$ khi và chỉ khi hai trong ba số $a,b,c$ bằng nhau.</span></td></tr>
+</table>
+</div>
+
+<div class="figwrap">
+<svg width="560" height="250" viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+  <!-- gridlines -->
+  <g stroke="#e3e9ef" stroke-width="1">
+    <line x1="210" y1="210" x2="210" y2="35"/><line x1="360" y1="210" x2="360" y2="35"/>
+    <line x1="510" y1="210" x2="510" y2="35"/>
+    <line x1="60" y1="135" x2="520" y2="135"/><line x1="60" y1="60" x2="520" y2="60"/>
+  </g>
+  <!-- region -->
+  <path d="M 60,210
+           L 145.5,205.8 L 222,194.4 L 289.5,177.6 L 348,157.2 L 397.5,135
+           L 438,112.8 L 469.5,96.6 L 492,75.6 L 505.5,64.2 L 510,60
+           L 505.5,64.8 L 492,80.4 L 469.5,108.6 L 438,151.2 L 397.5,210
+           Z"
+        fill="#dcebfa" stroke="none" opacity="0.9"/>
+  <!-- boundary curves -->
+  <path d="M 60,210 L 145.5,205.8 L 222,194.4 L 289.5,177.6 L 348,157.2 L 397.5,135
+           L 438,112.8 L 469.5,96.6 L 492,75.6 L 505.5,64.2 L 510,60"
+        fill="none" stroke="#2a6f97" stroke-width="2.2"/>
+  <path d="M 510,60 L 505.5,64.8 L 492,80.4 L 469.5,108.6 L 438,151.2 L 397.5,210"
+        fill="none" stroke="#2a6f97" stroke-width="2.2" stroke-dasharray="5,3"/>
+  <!-- axes -->
+  <g stroke="#1a2332" stroke-width="1.4">
+    <line x1="60" y1="210" x2="530" y2="210"/>
+    <line x1="60" y1="210" x2="60" y2="38"/>
+  </g>
+  <polygon points="530,210 522,206.5 522,213.5" fill="#1a2332"/>
+  <polygon points="60,38 56.5,46 63.5,46" fill="#1a2332"/>
+  <!-- equality points -->
+  <circle cx="60" cy="210" r="4.2" fill="#b5123a"/>
+  <circle cx="510" cy="60" r="4.2" fill="#b5123a"/>
+  <circle cx="397.5" cy="135" r="4.2" fill="#b5123a"/>
+  <text x="72" y="226" font-size="12" fill="#b5123a" font-family="Georgia">(0, 0)</text>
+  <text x="452" y="52" font-size="12" fill="#b5123a" font-family="Georgia">(3, 1)</text>
+  <text x="352" y="128" font-size="12" fill="#b5123a" font-family="Georgia">(9/4, 1/2)</text>
+  <!-- axis labels -->
+  <text x="522" y="228" font-size="13" font-style="italic" font-family="Georgia">q</text>
+  <text x="44" y="48" font-size="13" font-style="italic" font-family="Georgia">r</text>
+  <text x="205" y="226" font-size="11" fill="#5a6a7d" font-family="Georgia">1</text>
+  <text x="355" y="226" font-size="11" fill="#5a6a7d" font-family="Georgia">2</text>
+  <text x="505" y="226" font-size="11" fill="#5a6a7d" font-family="Georgia">3</text>
+  <text x="44" y="140" font-size="11" fill="#5a6a7d" font-family="Georgia">0.5</text>
+  <text x="48" y="65" font-size="11" fill="#5a6a7d" font-family="Georgia">1</text>
+  <text x="430" y="232" font-size="11" fill="#2a6f97" font-family="Georgia">9/4</text>
+  <!-- legend -->
+  <text x="240" y="185" font-size="11.5" fill="#16425b" font-family="Georgia">miền khả dĩ của (q, r)</text>
+</svg>
+<div class="small" style="margin-top:1mm">
+Miền các giá trị $\,(q,r)\,$ với $a,b,c\ge0,\ a+b+c=3$. Biên cong (nét liền và nét đứt)
+là $\Delta = 0$, tức chỗ hai biến trùng nhau. <b>Ba điểm đỏ là ba điểm dấu bằng</b> —
+đều nằm trên biên: $(0,0)$ &nbsp;[$(3,0,0)$ và hoán vị], $\ (9/4,\tfrac12)$ &nbsp;[$(2,\tfrac12,\tfrac12)$ và hoán vị],
+$(3,1)$ &nbsp;[$(1,1,1)$].
+</div>
+</div>
+
+<h2>4. Bước 3 — Chứng minh $F(q,r)\ge 0$</h2>
+<p>
+Ta xét ba vùng theo giá trị của $q$. Trước khi vào từng trường hợp, ghi nhớ
+một công cụ nhỏ nhưng hay dùng: với mọi $t$,
+$$4t^2-5t+4=\left(2t-\frac54\right)^2+\frac{39}{16}\;>\;0\qquad\text{(Đ4)}$$
+</p>
+
+<h3>Trường hợp 1: $0\le q\le\dfrac13$ — cả ba số hạng đều không âm</h3>
+<div class="box case">
+Khi $q\le\tfrac13$: $4q+3>0$; $\;12-34q\ge 12-\dfrac{34}{3}=\dfrac23>0$; và $q\ge0$.
+Kết hợp với $r\ge0$ (T3) và (Đ4):
+$$\underbrace{(4q+3)r^2}_{\ge\,0}\;+\;\underbrace{(12-34q)\,r}_{\ge\,0}\;+\;\underbrace{q\,(4q^2-5q+4)}_{\ge\,0}\;=\;F(q,r)\;\ge\;0. $$
+</div>
+
+<h3>Trường hợp 2: $q=3$ — tính tường minh</h3>
+<div class="box case">
+Thay $q=3$ vào $F$ (rút gọn trực tiếp, (Đ5)):
+$$F(3,r)=15\,(1-r)(5-r).$$
+Vì $9r\le q^2 = 9$ (T4) nên $r\le 1$, do đó $1-r\ge0$ và $5-r>0$ → $F(3,r)\ge0$.
+</div>
+
+<h3>Trường hợp 3: $\dfrac13\lt q\lt 3$ — "hoàn thành bình phương" với trọng số dương</h3>
+<p>
+Đây là trái tim của chứng minh. Nhân $F$ với trọng số dương
+$W = 2\,q\,(87-4q)\,(3-q)$. Chú ý $W>0$ vì mỗi thừa số dương:
+$q>0$; $87-4q>75>0$ (vì $q<3$); $3-q>0$. Khi đó có hằng đẳng thức sau
+(Đ7) — <i>phép "hoàn thành bình phương" theo biến $r$</i>:
+</p>
+<div class="box case">
+$$\begin{aligned}
+W\;F(q,r)\;=\;&\underbrace{2\,q(87-4q)\,\mu\,\Delta}_{\text{không âm nhờ } \Delta\,\ge\,0}\\[1mm]
+&+\;\underbrace{\Bigl[q\bigl((87-4q)\,r-(4q^2+27q-42)\bigr)\Bigr]^2}_{\text{bình phương}}\\[1mm]
+&+\;\underbrace{\frac{4}{27}\,(3-q)^3\,q^2\,(4q-9)^2}_{\text{bình phương}\,\times\,\text{nhân tử dương}}
+\end{aligned}$$
+với $\;\mu = \dfrac{4q^2+69q-18}{54}$.
+</div>
+<p><b>Cả ba số hạng ở vế phải đều không âm:</b></p>
+<p>
+• Số hạng $\Delta$: hệ số $2q(87-4q)>0$, và $\mu\ge0$ — đúng vì theo (Đ6):
+$$4q^2+69q-18=4\left(q-\frac13\right)^2+\frac{215}{3}\left(q-\frac13\right)+\frac{49}{9}\;>\;0
+\quad\text{khi } q>\frac13,$$
+còn $\Delta\ge0$ là (T5).
+</p>
+<p>
+• Hai số hạng còn lại hiển nhiên không âm (bình phương; và lập phương của số dương
+nhân với các bình phương không âm).
+</p>
+<p>
+Vậy $W\cdot F(q,r)\ge 0$ với $W>0$, suy ra $F(q,r)\ge0$.
+</p>
+
+<div class="box final">
+<span class="lbl">KẾT LUẬN CỦA BƯỚC 3</span><br>
+Trong cả ba trường hợp đều có $F(q,r)\ge 0$, tức $R\ge N$, tức
+$$\frac{a}{a^2+1}+\frac{b}{b^2+1}+\frac{c}{c^2+1}\;\le\;\frac25\left(ab+bc+ca+\frac34\right).\qquad\blacksquare$$
+</div>
+
+<h2>5. Bước 4 — Dấu bằng xảy ra ở đâu?</h2>
+<p>
+Để có dấu bằng, cần $F(q,r)=0$. Xét lại ba trường hợp, lần này lần dấu từng số hạng:
+</p>
+<div class="box case">
+<b>• Trường hợp 1 ($q\le\tfrac13$):</b> tổng ba số không âm bằng $0$ → từng số hạng bằng $0$.
+Số hạng thứ ba cho $q\,(4q^2-5q+4)=0$, mà (Đ4) cho thấy thừa số thứ hai luôn dương
+→ $q=0$ → $ab+bc+ca=0$. Ba tích không âm có tổng bằng $0$ thì từng tích bằng $0$;
+suy ra ít nhất hai trong ba số bằng $0$, và số còn lại bằng $3$ (vì tổng bằng $3$):
+$$(3,0,0),\quad(0,3,0),\quad(0,0,3).$$
+<b>• Trường hợp 2 ($q=3$):</b> theo (Đ1), $3-q=0$ tức tổng ba bình phương bằng $0$
+→ $a=b=c$, kết hợp $a+b+c=3$ ta được
+$$(1,1,1).$$
+<b>• Trường hợp 3 ($\tfrac13\lt q\lt 3$):</b> vì $W>0$, cả ba số hạng của (Đ7) phải bằng $0$.
+Số hạng cuối buộc $(3-q)^3q^2(4q-9)^2=0$, mà $q>0$ và $q<3$ → $\;q=\dfrac94$.
+Số hạng giữa (bình phương) khi đó buộc $(87-4q)\,r=4q^2+27q-42$, tức
+$78\,r=39$, suy ra $r=\dfrac12$.
+Với $a+b+c=3$, $q=\tfrac94$, $r=\tfrac12$, mỗi số $a,b,c$ là nghiệm của
+$$t^3-3t^2+\frac94\,t-\frac12 \;=\; (t-2)\left(t-\frac12\right)^2,$$
+nên bộ $(a,b,c)$ là hoán vị của
+$$\left(2,\ \frac12,\ \frac12\right).$$
+</div>
+
+<p>Ngược lại, thay trực tiếp từng điểm vào hai vế đều ra đẳng thức:</p>
+<table class="center">
+<tr><th>Điểm $(a,b,c)$</th><th>Vế trái</th><th>Vế phải</th></tr>
+<tr><td>$(1,1,1)$</td><td>$\tfrac12+\tfrac12+\tfrac12=\tfrac32$</td><td>$\tfrac25\left(3+\tfrac34\right)=\tfrac32$</td></tr>
+<tr><td>$(3,0,0)$ và hoán vị</td><td>$\tfrac{3}{10}+0+0=\tfrac{3}{10}$</td><td>$\tfrac25\cdot\tfrac34=\tfrac{3}{10}$</td></tr>
+<tr><td>$(2,\tfrac12,\tfrac12)$ và hoán vị</td><td>$\tfrac25+\tfrac25+\tfrac25=\tfrac65$</td><td>$\tfrac25\left(\tfrac94+\tfrac34\right)=\tfrac65$</td></tr>
+</table>
+
+<div class="box idea" style="margin-top:3mm">
+<b>Nhận xét.</b> Cả ba họ điểm dấu bằng đều nằm trên biên $\Delta=0$ của miền $(q,r)$
+(xem hình ở mục 3) — tức là chỗ hai biến trùng nhau, hoặc tại đỉnh $(0,0)$ nơi
+một biến "nuốt trọn" tổng. Điều này không trùng hợp: theo lý thuyết
+<i>uvw</i>, bất đẳng thức đối xứng bậc này "căng nhất" trên biên.
+</div>
+
+<h2>Phụ lục — Bảng các hằng đẳng thức được dùng đến</h2>
+<p class="small">
+Mỗi dòng là một đồng nhất thức thuần túy (không cần điều kiện ngoài $a+b+c=3$ với Đ0–Đ3);
+người đọc có thể tự kiểm tra bằng cách khai triển hai vế. Đây chính là "xương sống"
+của chứng minh.
+</p>
+<table class="idtab">
+<tr><td>(Đ0)</td><td>$10\,(R-N)=F(q,r)$ với $R=\tfrac25(q+\tfrac34)\Pi$, $N=\sum a(b^2+1)(c^2+1)$, $\Pi=\prod(a^2+1)$</td></tr>
+<tr><td>(Đ1)</td><td>$3-q=\dfrac{(a-b)^2+(b-c)^2+(c-a)^2}{6}$</td></tr>
+<tr><td>(Đ2)</td><td>$q^2-9r=\dfrac{(ab-bc)^2+(bc-ca)^2+(ca-ab)^2}{2}$</td></tr>
+<tr><td>(Đ3)</td><td>$9q^2-4q^3+(54q-108)r-27r^2=\bigl((a-b)(b-c)(c-a)\bigr)^2$</td></tr>
+<tr><td>(Đ4)</td><td>$4t^2-5t+4=\left(2t-\tfrac54\right)^2+\tfrac{39}{16}$</td></tr>
+<tr><td>(Đ5)</td><td>$F(3,r)=15\,(1-r)(5-r)$</td></tr>
+<tr><td>(Đ6)</td><td>$4t^2+69t-18=4\left(t-\tfrac13\right)^2+\tfrac{215}{3}\left(t-\tfrac13\right)+\tfrac{49}{9}$</td></tr>
+<tr><td>(Đ7)</td><td>$\begin{aligned}2q(87-4q)(3-q)\,F(q,r)\;={}&2q(87-4q)\,\mu\,\Delta+\Bigl[q\bigl((87-4q)r-(4q^2+27q-42)\bigr)\Bigr]^2\\&+\tfrac{4}{27}(3-q)^3q^2(4q-9)^2\end{aligned}$<br>
+<span class="small">với $\mu=\dfrac{4q^2+69q-18}{54}$, $\Delta = 9q^2-4q^3+(54q-108)r-27r^2$, $F(q,r)=(4q+3)r^2+(12-34q)r+q(4q^2-5q+4)$</span></td></tr>
+</table>
+
+<p class="small" style="margin-top:5mm">
+<i>Ghi chú nguồn:</i> chứng minh trên đã được chính thức hoá và kiểm chứng toàn bộ
+bằng trợ lý chứng minh <b>Lean 4</b> (toán học được máy xác nhận từng bước, không
+dựa vào trực giác); tài liệu này chỉ trình bày lại nội dung toán bằng ngôn ngữ
+thông thường.
+</p>
+
+</body>
+</html>
