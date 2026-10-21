@@ -1,10 +1,19 @@
 # Lean Setup — lean-sos project
 
-## Trạng thái (20/10/2026)
-- Toolchain: **Lean v4.35.0 stable** (chỉ core, KHÔNG Mathlib).
-- File chính: `ineq_proof.lean` — compile sạch, exit 0, không `sorry` (chỉ dùng 3 axiom chuẩn: propext, Classical.choice, Quot.sound).
-- Build: `lean ineq_proof.lean` (single file, chưa cần lake project).
-- Chưa có lake project. Nếu cần Mathlib sau này: `lake +v4.35.0 new <name> math` → `lake update` → `lake exe cache get` → `lake build`.
+## Trạng thái (21/10/2026)
+- Toolchain: **Lean v4.35.0 stable** (chỉ core, KHÔNG Mathlib) — đã cài trên **Mac này** qua elan (`~/.elan/bin`, `elan toolchain install leanprover/lean4:v4.35.0`; không cần workaround Windows).
+- `ineq_proof.lean` — proof đầy đủ (p,q,r + SOS), compile sạch, 3 axiom chuẩn.
+- `idea_check.lean` — các mảnh đúng của ý tưởng dồn-biến (g-transform, two-equal, zero-case, vertex-decomp), compile sạch, 3 axiom chuẩn. Xem `idea-analysis.md`.
+- Build: `~/.elan/bin/lean <file>.lean` (single file, chưa cần lake project).
+
+## Grind lessons (bắt buộc đọc khi debug grind) — 21/10/2026
+- Grind **không triển khai tích qua tổng chứa nghịch đảo**: goal dạng `D·(21/10 − (u + a²/5 + ...)) = poly` không bao giờ close dù e1/e2 đã merge các monomial. Fix: **nhân 10 (hay mẫu chung) trước**, làm việc hoàn toàn không phân thức: `D·(21 − 10Σ)` với `10Σ = 10u + 2a² + ...` — ăn ngay.
+- `generalize (expr) = u at h hle` KHÔNG rewrite hypothesis nếu phân thức bị giấu dưới `abbrev` chưa unfold → dùng `change <dạng-mở> at hle` trước khi generalize.
+- `def` không cho grind nhìn xuyên; dùng `abbrev`.
+- Nhân một hệ thức với thừa số: làm lemma riêng context sạch (`shift_mul {u v w z} (h : u*v = w) : u*v*z = w*z := by grind`) rồi apply — đừng trông chờ grind tự nhân trong context lớn.
+- `0 < S` không tự coerce thành `0 ≤ S` khi truyền vào lemma khác → `mnn h (by grind)`.
+- `div_mul_cancel (by grind)` cần proven `den ≠ 0` trong context; helper có nhánh if-then-else của grind cần giả định mẫu dương/≠0 để tránh case-split vô lý.
+- Right-hand-side chứa `(tổng)^2 + 39*16⁻¹` (nghịch đảo vô tỷ trong ngoặc) khiến ring-normalizer bỏ cuộc trên goal — đưa về dạng đã-NHÂN-RỘNG (SOS inline, không `/`) trong phát biểu theorem.
 
 ## Cách cài trên máy này (network có endpoint OCSP/CRL bị chặn)
 TLS của Windows (schannel) fail revocation check → `curl` thường và **downloader của elan đều lỗi**
